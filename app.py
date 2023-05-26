@@ -1,11 +1,39 @@
+import json
+
+import networkx as nx
+from bson import json_util
 from flask import Flask
+from pymongo import MongoClient
+
+from calculate_weight_function import calculate_weight
 
 app = Flask(__name__)
 
+# Obtener datos de MongoDB
+client = MongoClient(
+    'mongodb+srv://lepian:tCJRUEhEhRy5YXma@compalg-ws6c-g2.uwf4hxj.mongodb.net/?retryWrites=true&w=majority')
+db = client['data']
 
-@app.route('/')
+nodes = list(db['film'].find())
+
+netflix_graph = nx.DiGraph()
+
+for e, node in enumerate(nodes):
+    for i in range(e + 1, 20):
+        target = nodes[i]
+        weight = calculate_weight(node, target)
+        if weight > 0:
+            netflix_graph.add_edge(str(node['Title'].replace(':', '')), str(
+                target['Title'].replace(':', '')), weight=weight)
+        else:
+            netflix_graph.add_node(str(node['Title'].replace(':', '')))
+    if e == 20:
+        break
+
+
+@app.route('/nodes')
 def index():
-    return "Hello world from Flask"
+    return json.dumps({'nodes': nodes}, default=json_util.default)
 
 
 if __name__ == '__main__':
