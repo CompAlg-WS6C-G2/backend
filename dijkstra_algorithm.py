@@ -19,7 +19,7 @@ def dijkstra(graph: 'nx.classes.graph.Graph', start: str, end: str) -> 'List':
     """
 
     # Menor camino de nodo_inicio a nodo_objetivo
-    def backtrace(prev, start, end):
+    def backtrace(prev, start: str, end: str):
         node = end
         path = []
         while node != start:
@@ -31,12 +31,14 @@ def dijkstra(graph: 'nx.classes.graph.Graph', start: str, end: str) -> 'List':
 
     # Peso del eje
     def cost(u, v):
-        return graph.get_edge_data(u, v).get('weight')
+        if (u, v) not in graph.edges:
+            return math.inf
+        return graph[u][v]['weight']
 
     # Diccionario para los nodos previos
     prev = {}
     # Distancia entre los nodos (math.inf por defecto)
-    dist = {v: math.inf for v in list(nx.nodes(graph))}
+    dist = {v: math.inf for v in graph}
     # Set de los nodos visitados
     visited = set()
     # Cola de prioridad
@@ -45,11 +47,14 @@ def dijkstra(graph: 'nx.classes.graph.Graph', start: str, end: str) -> 'List':
     dist[start] = 0
     pq.put((dist[start], start))
 
-    while 0 != pq.qsize():
+    while pq.qsize() != 0:
+        # Obtener el último elemento de la cola de prioridad
         curr_cost, curr = pq.get()
         visited.add(curr)
-        # Mirar los nodos adyacentes al actual
+        # Continuar si el grafo posee nodos
+        # if graph is not None:
         if dict(graph.adjacency()).get(curr) is not None:
+            # Obtener los nodos del grafo
             for neighbor in dict(graph.adjacency()).get(curr):
                 # Si encontramos un camino más corto
                 path = dist[curr] + cost(curr, neighbor)

@@ -5,8 +5,8 @@ from bson import json_util
 from flask import Flask, jsonify
 from pymongo import MongoClient
 
-from dijkstra_algorithm import dijkstra
 from calculate_weight_function import calculate_weight
+from dijkstra_algorithm import dijkstra
 
 app = Flask(__name__)
 
@@ -17,32 +17,37 @@ db = client['data']
 
 nodes = list(db['film'].find())
 
+for node in nodes:
+    node['Title'] = node['Title'].replace(':', ' ')
+
 netflix_graph = nx.DiGraph()
 
 for e, node in enumerate(nodes):
-    for i in range(e + 1, 20):
+    for i in range(e + 1, 21):
         target = nodes[i]
         weight = calculate_weight(node, target)
         if weight > 0:
-            netflix_graph.add_edge(str(node['Title'].replace(':', '')), str(
-                target['Title'].replace(':', '')), weight=weight)
+            netflix_graph.add_edge(str(node['Title']), str(
+                target['Title']), weight=weight)
         else:
-            netflix_graph.add_node(str(node['Title'].replace(':', '')))
+            netflix_graph.add_node(str(node['Title']))
     if e == 20:
         break
 
-@app.route('/dijkstra/<string:start>/<string:end>')
-def dijkstra_route(start, end):
-    print("hola")
-    #run dijkstra
-    path, dist = dijkstra(netflix_graph, start, end)
-    #get nodes and links necesary to show the path
-    _nodes = []
-    for node in path:
-        _nodes.append(nodes[node-1])
+lst_nodes_graph = list(netflix_graph.nodes)
 
-    #return the path
-    return json.dumps({'nodes': _nodes, 'distance': dist}, default=json_util.default)
+
+@app.route('/')
+def test():
+    return lst_nodes_graph
+
+
+@app.route('/dijkstra/<string:start>/<string:end>')
+def dijkstra_route(start: str, end: str):
+    path, dist = dijkstra(netflix_graph, start, end)
+
+    return json.dumps({'path': path, 'distance': dist}, default=json_util.default)
+
 
 @app.route('/film-title')
 def netflixList():
