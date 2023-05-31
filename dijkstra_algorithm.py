@@ -4,7 +4,7 @@ from queue import PriorityQueue
 import networkx as nx
 
 
-def dijkstra(graph: 'networkx.classes.graph.Graph', start: str, end: str) -> 'List':
+def dijkstra(graph: 'nx.classes.graph.Graph', start: str, end: str) -> 'List':
     """
     Algoritmo Dijkstra para encontrar el camino más corto entre dos nodos
 
