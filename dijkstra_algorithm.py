@@ -4,7 +4,7 @@ from queue import PriorityQueue
 import networkx as nx
 
 
-def dijkstra(graph: 'nx.classes.graph.Graph', start: str, end: str) -> 'List':
+def dijkstra(graph: 'nx.classes.graph.Graph', start: str, end: str):
     """
     Algoritmo Dijkstra para encontrar el camino más corto entre dos nodos
 
@@ -52,7 +52,6 @@ def dijkstra(graph: 'nx.classes.graph.Graph', start: str, end: str) -> 'List':
         curr_cost, curr = pq.get()
         visited.add(curr)
         # Continuar si el grafo posee nodos
-        # if graph is not None:
         if dict(graph.adjacency()).get(curr) is not None:
             # Obtener los nodos del grafo
             for neighbor in dict(graph.adjacency()).get(curr):

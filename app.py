@@ -3,12 +3,14 @@ import json
 import networkx as nx
 from bson import json_util
 from flask import Flask, jsonify
+from flask_cors import CORS
 from pymongo import MongoClient
 
 from calculate_weight_function import calculate_weight
 from dijkstra_algorithm import dijkstra
 
 app = Flask(__name__)
+CORS(app)   # Enable CORS
 
 # Obtener datos de MongoDB
 client = MongoClient(
@@ -38,8 +40,18 @@ lst_nodes_graph = list(netflix_graph.nodes)
 
 
 @app.route('/')
-def test():
+def home():
     return lst_nodes_graph
+
+
+@app.route('/links')
+def graph_links():
+    return jsonify(nx.node_link_data(netflix_graph).get('links'))
+
+
+@app.route('/nodes')
+def graph_nodes():
+    return jsonify(nx.node_link_data(netflix_graph).get('nodes'))
 
 
 @app.route('/dijkstra/<string:start>/<string:end>')
@@ -49,21 +61,8 @@ def dijkstra_route(start: str, end: str):
     return json.dumps({'path': path, 'distance': dist}, default=json_util.default)
 
 
-@app.route('/film-title')
-def netflixList():
-    films = []
-    for i in nodes:
-        films.append(i['Title'])
-    _films = list()
-    for i in set(films):
-        temp_dict = dict()
-        temp_dict["Film"] = i
-        _films.append(temp_dict)
-    return jsonify(_films)
-
-
-@app.route('/nodes')
-def index():
+@app.route('/mongodb_nodes')
+def mongodb_data():
     return json.dumps({'nodes': nodes}, default=json_util.default)
 
 
