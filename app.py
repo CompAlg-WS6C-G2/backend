@@ -4,6 +4,7 @@ import networkx as nx
 from bson import json_util
 from flask import Flask, jsonify
 from flask_cors import CORS
+from pymongo import MongoClient
 
 from calculate_weight_function import calculate_weight
 from dijkstra_algorithm import dijkstra
@@ -12,9 +13,12 @@ app = Flask(__name__)
 CORS(app)   # Enable CORS
 
 
-with open ('data.json') as f:
-    nodes = json.load(f)
+# Obtener datos de MongoDB
+client = MongoClient(
+    'mongodb+srv://lepian:tCJRUEhEhRy5YXma@compalg-ws6c-g2.uwf4hxj.mongodb.net/?retryWrites=true&w=majority')
+db = client['data']
 
+nodes = list(db['film'].find())
 for node in nodes:
     node['Title'] = node['Title'].replace(':', ' ')
 
