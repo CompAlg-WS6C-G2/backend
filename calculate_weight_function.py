@@ -1,4 +1,15 @@
 def calculate_weight(source, target):
+    """
+    Función para calcular el peso entre dos nodos
+
+    Args:
+        source : Nodo origen
+        target : Nodo destino
+
+    Returns:
+        weight (int) : Peso de la arista entre los nodos
+    """
+
     weight = 0
     source_genre = source['Genre'].split(',')
     target_genre = target['Genre'].split(',')
