@@ -16,7 +16,9 @@ def calculate_weight(source, target):
 
     common_genres = [_ for _ in source_genre if _ in target_genre]
 
-    if len(common_genres) > 0:
+    min_quantity_genres = min(len(source_genre), len(target_genre)) / 2
+
+    if len(common_genres) > min_quantity_genres:
         source_country_availability = source['Country Availability'].split(',')
         target_country_availability = target['Country Availability'].split(',')
 
