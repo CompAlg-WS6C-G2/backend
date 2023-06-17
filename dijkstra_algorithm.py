@@ -4,7 +4,37 @@ from queue import PriorityQueue
 import networkx as nx
 
 
-def dijkstra(graph: 'nx.classes.graph.Graph', start: str, end: str):
+def filter_film(node, type_film: str, runtime: int, language: str, score: int):
+    runtime_dict = {
+        0: '0',
+        1: '< 30 minutes',
+        2: '1-2 hour',
+        3: '> 2 hrs'
+    }
+
+    if type_film == 'both' and runtime == 0 and language == 'all' and score == 0:
+        return True
+    else:
+        if type_film != 'both':
+            if node['Runtime'] == runtime_dict[runtime] and node['Languages'] == language and node['Score'] >= score:
+                return True
+            return False
+        if runtime == 0:
+            if node['Series or Movie'] == type_film and node['Languages'] == language and node['Score'] >= score:
+                return True
+            return False
+        if language == 'all':
+            if node['Series or Movie'] == type_film and node['Runtime'] == runtime_dict[runtime] and node['Score'] >= score:
+                return True
+            return False
+        if score == 0:
+            if node['Series or Movie'] == type_film and node['Runtime'] == runtime_dict[runtime] and node['Languages'] == language:
+                return True
+            return False
+
+
+# def dijkstra(graph: 'nx.classes.graph.Graph', start: str, end: str):
+def dijkstra(graph: 'nx.classes.graph.Graph', start: str, end: str, type_film: str, runtime: int, language: str, score: int):
     """
     Algoritmo Dijkstra para encontrar el camino más corto entre dos nodos
 
@@ -55,25 +85,26 @@ def dijkstra(graph: 'nx.classes.graph.Graph', start: str, end: str):
         if dict(graph.adjacency()).get(curr) is not None:
             # Obtener los nodos del grafo
             for neighbor in dict(graph.adjacency()).get(curr):
-                # Si encontramos un camino más corto
-                path = dist[curr] + cost(curr, neighbor)
-                if path < dist[neighbor]:
-                    # Actualizamos la distancia si encontramos una más corta
-                    dist[neighbor] = path
-                    # Actualizamos el nodo previo para ser el nodo previo en el nuevo
-                    # camino mínimo
-                    prev[neighbor] = curr
-                    # Si no hemos visitado al nodo vecino (adyacente)
-                    if neighbor not in visited:
-                        # Marcar el nodo como visitado
-                        visited.add(neighbor)
-                        # Insertar en la cola de prioridad
-                        pq.put((dist[neighbor], neighbor))
-                    # De otra manera, actualizar la entrada en la cola de prioridad
-                    else:
-                        # Remover anterior
-                        _ = pq.get((dist[neighbor], neighbor))
-                        # Insertar nuevo
-                        pq.put((dist[neighbor], neighbor))
+                if (filter_film(neighbor, type_film, runtime, language, score)):
+                    path = dist[curr] + cost(curr, neighbor)
+                    # Si encontramos un camino más corto
+                    if path < dist[neighbor]:
+                        # Actualizamos la distancia si encontramos una más corta
+                        dist[neighbor] = path
+                        # Actualizamos el nodo previo para ser el nodo previo en el nuevo
+                        # camino mínimo
+                        prev[neighbor] = curr
+                        # Si no hemos visitado al nodo vecino (adyacente)
+                        if neighbor not in visited:
+                            # Marcar el nodo como visitado
+                            visited.add(neighbor)
+                            # Insertar en la cola de prioridad
+                            pq.put((dist[neighbor], neighbor))
+                        # De otra manera, actualizar la entrada en la cola de prioridad
+                        else:
+                            # Remover anterior
+                            _ = pq.get((dist[neighbor], neighbor))
+                            # Insertar nuevo
+                            pq.put((dist[neighbor], neighbor))
 
     return backtrace(prev, start, end), dist[end]

@@ -4,7 +4,6 @@ import networkx as nx
 from bson import json_util
 from flask import Flask, jsonify
 from flask_cors import CORS
-from pymongo import MongoClient
 
 from calculate_weight_function import calculate_weight
 from dijkstra_algorithm import dijkstra
@@ -13,22 +12,21 @@ app = Flask(__name__)
 CORS(app)   # Enable CORS
 
 
-# Obtener datos de MongoDB
-client = MongoClient(
-    'mongodb+srv://lepian:tCJRUEhEhRy5YXma@compalg-ws6c-g2.uwf4hxj.mongodb.net/?retryWrites=true&w=majority')
-db = client['data']
+# Lectura del dataset en JSON
+with open('data.json', 'r') as file:
+    nodes = json.load(file)
 
-# Acceder a los datos de las películas y series
-nodes = list(db['film'].find())
 
 # Crear grafo
 netflix_graph = nx.Graph()
+
 
 # Agregar nodos
 for node in nodes:
     # Eliminar el caracter ':' de los títulos de las películas y series
     # para evitar problemas con el algoritmo de Dijkstra
     netflix_graph.add_node(str(node['Title'].replace(':', ' ')))
+
 
 # Agregar ejes
 try:
@@ -56,23 +54,10 @@ except FileNotFoundError:
     with open('edges.json', 'w') as file:
         json.dump(edges, file, indent=4)
 
-lst_nodes_graph = list(netflix_graph.nodes)
-
 
 @ app.route('/')
 def home():
-    """
-    Lista de los nombres de las películas y series
-    """
-    return lst_nodes_graph
-
-
-@ app.route('/links')
-def graph_links():
-    """
-    Aristas del grafo
-    """
-    return jsonify(nx.node_link_data(netflix_graph).get('links'))
+    return 'Complex Networks - Netflix'
 
 
 @ app.route('/nodes')
@@ -83,40 +68,55 @@ def graph_nodes():
     return jsonify(nx.node_link_data(netflix_graph).get('nodes'))
 
 
-@ app.route('/dijkstra/<string:start>/<string:end>')
-def dijkstra_route(start: str, end: str):
+@ app.route('/links')
+def graph_links():
+    """
+    Aristas del grafo
+    """
+    return jsonify(nx.node_link_data(netflix_graph).get('links'))
+
+
+@ app.route('/dijkstra/<string:start>/<string:end>', defaults = {'type_film': 'both', 'runtime': 0, 'language': 'all', 'score': 0})
+@ app.route('/dijkstra/<string:start>/<string:end>/<string:type_film>/<int:runtime>/<string:language>/<int:score>')
+def dijkstra_route(start: str, end: str, type_film: str, runtime: int, language: str, score: int):
     """
     Camino mínimo entre dos nodos con el Algortimo Dijkstra
     Args:
         start (str) : Nodo origen
         end (str) : Nodo destino
+        type_film (str) : Tipo de película (movie, series, both)
+        runtime (int) : Duración de la película
+        language (str) : Idioma de la película
+        score (int) : Puntuación de la película
     Returns:
         path (list) : Lista de nodos que conforman el camino mínimo
         distance (int) : Distancia total del camino mínimo
     """
-    path, dist = dijkstra(netflix_graph, start, end)
+    path, dist = dijkstra(netflix_graph, start, end, type_film, runtime, language, score)
 
     return json.dumps({'path': path, 'distance': dist}, default=json_util.default)
 
 
-@ app.route('/mongodb_nodes')
-def mongodb_data():
+@ app.route('/data')
+def data():
     """
-    Datos de las películas y series en MongoDB
+    Datos de las películas y series
     """
     return json.dumps({'nodes': nodes}, default=json_util.default)
 
 
-@ app.route('/mongodb_nodes/<string:title>')
-def mongodb_data_by_title(title: str):
+@ app.route('/data/<string:title>')
+def data_by_title(title: str):
     """
-    Película o serie en MongoDB por título
+    Película o serie por título
     Args:
         title (str) : Título de la película o serie
     Returns:
         node (dict) : Datos de la película o serie
     """
-    return json.dumps(db['film'].find_one({'Title': title}), default=json_util.default)
+    node = [node for node in nodes if node['Title'] == title][0]
+
+    return json.dumps(node, default=json_util.default)
 
 
 if __name__ == '__main__':
