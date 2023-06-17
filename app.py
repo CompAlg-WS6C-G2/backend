@@ -12,6 +12,12 @@ app = Flask(__name__)
 CORS(app)   # Enable CORS
 
 
+# Crear hashmap
+nodes = {}
+# Crear lista
+nodes_lst = []
+
+
 # Lectura del dataset en JSON
 with open('data.json', 'r') as file:
     json_nodes = json.load(file)
@@ -19,16 +25,18 @@ with open('data.json', 'r') as file:
         # Eliminar el caracter ':' de los títulos de las películas y series
         # para evitar problemas con el algoritmo de Dijkstra
         node['Title'] = node['Title'].replace(':', ' ')
+        # Agregarlos a la lista
+        nodes_lst.append(node)
+        # Agregar datos al hashmap
+        nodes[node['Title']] = node
 
-    # Crear hashmap
-    nodes = {node['Title']: node for node in json_nodes}
 
 # Crear grafo
 netflix_graph = nx.Graph()
 
 
 # Agregar nodos
-for node in json_nodes:
+for node in nodes_lst:
     netflix_graph.add_node(str(node['Title']))
 
 
@@ -43,9 +51,9 @@ try:
 except FileNotFoundError:
     # Si no existe, crear el archivo y agregar los ejes
     edges = []
-    for e, source in enumerate(json_nodes):
-        for i in range(e + 1, len(json_nodes)):
-            target = json_nodes[i]
+    for e, source in enumerate(nodes_lst):
+        for i in range(e + 1, len(nodes_lst)):
+            target = nodes_lst[i]
             weight = calculate_weight(source, target)
             if weight > 0:
                 edges.append({
@@ -62,7 +70,7 @@ except FileNotFoundError:
 @ app.route('/')
 def home():
     # Total
-    return jsonify([node['Title'] for node in json_nodes])
+    return jsonify([node['Title'] for node in nodes_lst])
 
 
 @ app.route('/nodes')
