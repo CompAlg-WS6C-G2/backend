@@ -14,18 +14,22 @@ CORS(app)   # Enable CORS
 
 # Lectura del dataset en JSON
 with open('data.json', 'r') as file:
-    nodes = json.load(file)
+    json_nodes = json.load(file)
+    for node in json_nodes:
+        # Eliminar el caracter ':' de los títulos de las películas y series
+        # para evitar problemas con el algoritmo de Dijkstra
+        node['Title'] = node['Title'].replace(':', ' ')
 
+    # Crear hashmap
+    nodes = {node['Title']: node for node in json_nodes}
 
 # Crear grafo
 netflix_graph = nx.Graph()
 
 
 # Agregar nodos
-for node in nodes:
-    # Eliminar el caracter ':' de los títulos de las películas y series
-    # para evitar problemas con el algoritmo de Dijkstra
-    netflix_graph.add_node(str(node['Title'].replace(':', ' ')))
+for node in json_nodes:
+    netflix_graph.add_node(str(node['Title']))
 
 
 # Agregar ejes
@@ -39,9 +43,9 @@ try:
 except FileNotFoundError:
     # Si no existe, crear el archivo y agregar los ejes
     edges = []
-    for e, source in enumerate(nodes):
-        for i in range(e + 1, len(nodes)):
-            target = nodes[i]
+    for e, source in enumerate(json_nodes):
+        for i in range(e + 1, len(json_nodes)):
+            target = json_nodes[i]
             weight = calculate_weight(source, target)
             if weight > 0:
                 edges.append({
@@ -52,12 +56,13 @@ except FileNotFoundError:
                 netflix_graph.add_edge(str(source['Title']), str(
                     target['Title']), weight=weight)
     with open('edges.json', 'w') as file:
-        json.dump(edges, file, indent=4)
+        json.dump(edges, file, indent=2)
 
 
 @ app.route('/')
 def home():
-    return 'Complex Networks - Netflix'
+    # Total
+    return jsonify([node['Title'] for node in json_nodes])
 
 
 @ app.route('/nodes')
@@ -76,7 +81,7 @@ def graph_links():
     return jsonify(nx.node_link_data(netflix_graph).get('links'))
 
 
-@ app.route('/dijkstra/<string:start>/<string:end>', defaults = {'type_film': 'both', 'runtime': 0, 'language': 'all', 'score': 0})
+@ app.route('/dijkstra/<string:start>/<string:end>', defaults={'type_film': 'both', 'runtime': 0, 'language': 'all', 'score': 0})
 @ app.route('/dijkstra/<string:start>/<string:end>/<string:type_film>/<int:runtime>/<string:language>/<int:score>')
 def dijkstra_route(start: str, end: str, type_film: str, runtime: int, language: str, score: int):
     """
@@ -92,7 +97,8 @@ def dijkstra_route(start: str, end: str, type_film: str, runtime: int, language:
         path (list) : Lista de nodos que conforman el camino mínimo
         distance (int) : Distancia total del camino mínimo
     """
-    path, dist = dijkstra(netflix_graph, start, end, type_film, runtime, language, score)
+    path, dist = dijkstra(netflix_graph, start, end,
+                          type_film, runtime, language, score, nodes)
 
     return json.dumps({'path': path, 'distance': dist}, default=json_util.default)
 
@@ -114,9 +120,8 @@ def data_by_title(title: str):
     Returns:
         node (dict) : Datos de la película o serie
     """
-    node = [node for node in nodes if node['Title'] == title][0]
 
-    return json.dumps(node, default=json_util.default)
+    return json.dumps(nodes.get(str(title)), default=json_util.default)
 
 
 if __name__ == '__main__':

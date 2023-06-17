@@ -12,29 +12,24 @@ def filter_film(node, type_film: str, runtime: int, language: str, score: int):
         3: '> 2 hrs'
     }
 
+    language_list = node['Languages'].split(',')
+
     if type_film == 'both' and runtime == 0 and language == 'all' and score == 0:
         return True
     else:
-        if type_film != 'both':
-            if node['Runtime'] == runtime_dict[runtime] and node['Languages'] == language and node['Score'] >= score:
-                return True
-            return False
-        if runtime == 0:
-            if node['Series or Movie'] == type_film and node['Languages'] == language and node['Score'] >= score:
-                return True
-            return False
-        if language == 'all':
-            if node['Series or Movie'] == type_film and node['Runtime'] == runtime_dict[runtime] and node['Score'] >= score:
-                return True
-            return False
-        if score == 0:
-            if node['Series or Movie'] == type_film and node['Runtime'] == runtime_dict[runtime] and node['Languages'] == language:
-                return True
-            return False
+        isValid = True
+        if type_film != 'both' and node['Series or Movie'] != type_film:
+            isValid = False
+        if runtime != 0 and node['Runtime'] != runtime_dict[runtime]:
+            isValid = False
+        if language != 'all' and language not in language_list:
+            isValid = False
+        if score != 0 and float(node['IMDb Score']) < score:
+            isValid = False
+        return isValid
 
 
-# def dijkstra(graph: 'nx.classes.graph.Graph', start: str, end: str):
-def dijkstra(graph: 'nx.classes.graph.Graph', start: str, end: str, type_film: str, runtime: int, language: str, score: int):
+def dijkstra(graph: 'nx.classes.graph.Graph', start: str, end: str, type_film: str, runtime: int, language: str, score: int, nodes):
     """
     Algoritmo Dijkstra para encontrar el camino más corto entre dos nodos
 
@@ -53,6 +48,8 @@ def dijkstra(graph: 'nx.classes.graph.Graph', start: str, end: str, type_film: s
         node = end
         path = []
         while node != start:
+            if prev[node] == None:
+                return path
             path.append(node)
             node = prev[node]
         path.append(node)
@@ -66,7 +63,7 @@ def dijkstra(graph: 'nx.classes.graph.Graph', start: str, end: str, type_film: s
         return graph[u][v]['weight']
 
     # Diccionario para los nodos previos
-    prev = {}
+    prev = {v: None for v in graph}
     # Distancia entre los nodos (math.inf por defecto)
     dist = {v: math.inf for v in graph}
     # Set de los nodos visitados
@@ -85,7 +82,9 @@ def dijkstra(graph: 'nx.classes.graph.Graph', start: str, end: str, type_film: s
         if dict(graph.adjacency()).get(curr) is not None:
             # Obtener los nodos del grafo
             for neighbor in dict(graph.adjacency()).get(curr):
-                if (filter_film(neighbor, type_film, runtime, language, score)):
+                # Buscar en el hashmap el nodo
+                mynode = nodes.get(str(neighbor))
+                if (filter_film(mynode, type_film, runtime, language, score)):
                     path = dist[curr] + cost(curr, neighbor)
                     # Si encontramos un camino más corto
                     if path < dist[neighbor]:
