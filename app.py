@@ -19,7 +19,7 @@ nodes_lst = []
 
 
 # Lectura del dataset en JSON
-with open('data.json', 'r') as file:
+with open('data.json', 'r',  encoding='utf8') as file:
     json_nodes = json.load(file)
     for node in json_nodes:
         # Eliminar el caracter ':' de los títulos de las películas y series
@@ -43,7 +43,7 @@ for node in nodes_lst:
 # Agregar ejes
 try:
     # Si existe el archivo, agregar los ejes
-    with open('edges.json', 'r') as file:
+    with open('edges.json', 'r',  encoding='utf8') as file:
         edges = json.load(file)
         for edge in edges:
             netflix_graph.add_edge(
