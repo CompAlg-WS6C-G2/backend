@@ -12,9 +12,12 @@ def filter_film(mynode: dict, type_film: str, runtime: int, language: str, score
         3: '> 2 hrs'
     }
 
-    language_list = mynode['Languages'].split(',')
-    language_list = list(map(str.strip, language_list))
-    if language_list == []:
+    language_list = []
+
+    if mynode is not None:
+        language_list = mynode['Languages'].split(',')
+        language_list = list(map(str.strip, language_list))
+    else:
         language_list = ['English']
 
     if type_film == 'both' and runtime == 0 and language == 'all' and score == 0:
