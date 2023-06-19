@@ -21,7 +21,7 @@ def filter_film(mynode: dict, type_film: str, runtime: int, score: int):
             isValid = False
         if runtime != 4 and runtime_dict[mynode['Runtime']] > runtime:
             isValid = False
-        if score != 0 and mynode['IMDb Score'] < score:
+        if score != 0 and float(mynode['IMDb Score']) < score:
             isValid = False
         return isValid
 
