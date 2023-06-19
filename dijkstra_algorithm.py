@@ -16,11 +16,18 @@ def filter_film(mynode: dict, type_film: str, runtime: int, score: int):
         return True
     else:
         isValid = True
+
+        try:
+            myscore = mynode['IMDb Score']
+            myscore = float(myscore)
+        except TypeError:
+            myscore = 0
+
         if type_film != 'both' and mynode['Series or Movie'] != type_film:
             isValid = False
         if runtime != 4 and runtime_dict[mynode['Runtime']] > runtime:
             isValid = False
-        if score != 0 and float(mynode['IMDb Score']) < score:
+        if score != 0 and myscore < score:
             isValid = False
         return isValid
 
