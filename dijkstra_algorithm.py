@@ -17,17 +17,11 @@ def filter_film(mynode: dict, type_film: str, runtime: int, score: int):
     else:
         isValid = True
 
-        try:
-            myscore = mynode['IMDb Score']
-            myscore = float(myscore)
-        except TypeError:
-            myscore = 0
-
         if type_film != 'both' and mynode['Series or Movie'] != type_film:
             isValid = False
         if runtime != 4 and runtime_dict[mynode['Runtime']] > runtime:
             isValid = False
-        if score != 0 and myscore < score:
+        if score != 0 and mynode['IMDb Score'] < score:
             isValid = False
         return isValid
 
@@ -86,7 +80,7 @@ def dijkstra(graph: 'nx.classes.graph.Graph', start: str, end: str, type_film: s
             # Obtener los nodos del grafo
             for neighbor in dict(graph.adjacency()).get(curr):
                 # Buscar en el hashmap el nodo
-                mynode = nodes.get(str(neighbor))
+                mynode = nodes[neighbor]
                 if (filter_film(mynode, type_film, runtime, score)):
                     path = dist[curr] + cost(curr, neighbor)
                     # Si encontramos un camino más corto
