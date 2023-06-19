@@ -90,9 +90,9 @@ def graph_links():
 
 
 @ app.route('/dijkstra/<string:start>/<string:end>',
-            defaults={'type_film': 'both', 'runtime': 0, 'language': 'all', 'score': 0})
-@ app.route('/dijkstra/<string:start>/<string:end>/<string:type_film>/<int:runtime>/<string:language>/<int:score>')
-def dijkstra_route(start: str, end: str, type_film: str, runtime: int, language: str, score: int):
+            defaults={'type_film': 'both', 'runtime': 4, 'score': 0})
+@ app.route('/dijkstra/<string:start>/<string:end>/<string:type_film>/<int:runtime>/<int:score>')
+def dijkstra_route(start: str, end: str, type_film: str, runtime: int, score: int):
     """
     Camino mínimo entre dos nodos con el Algortimo Dijkstra
     Args:
@@ -100,14 +100,13 @@ def dijkstra_route(start: str, end: str, type_film: str, runtime: int, language:
         end (str) : Nodo destino
         type_film (str) : Tipo de película (movie, series, both)
         runtime (int) : Duración de la película
-        language (str) : Idioma de la película
         score (int) : Puntuación de la película
     Returns:
         path (list) : Lista de nodos que conforman el camino mínimo
         distance (int) : Distancia total del camino mínimo
     """
     path, dist = dijkstra(netflix_graph, start, end,
-                          type_film, runtime, language, score, nodes)
+                          type_film, runtime, score, nodes)
 
     if len(path):
         return json.dumps({'path': path, 'distance': dist}, default=json_util.default)

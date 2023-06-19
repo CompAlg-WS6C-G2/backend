@@ -4,38 +4,28 @@ from queue import PriorityQueue
 import networkx as nx
 
 
-def filter_film(mynode: dict, type_film: str, runtime: int, language: str, score: int):
+def filter_film(mynode: dict, type_film: str, runtime: int, score: int):
     runtime_dict = {
-        0: '0',
-        1: '< 30 minutes',
-        2: '1-2 hour',
-        3: '> 2 hrs'
+        '< 30 minutes': 1,
+        '30-60 mins': 2,
+        '1-2 hour': 3,
+        '> 2 hrs': 4
     }
 
-    language_list = []
-
-    if mynode is not None:
-        language_list = mynode['Languages'].split(',')
-        language_list = list(map(str.strip, language_list))
-    else:
-        language_list = ['English']
-
-    if type_film == 'both' and runtime == 0 and language == 'all' and score == 0:
+    if type_film == 'both' and runtime == 4 and score == 0:
         return True
     else:
         isValid = True
         if type_film != 'both' and mynode['Series or Movie'] != type_film:
             isValid = False
-        if runtime != 0 and mynode['Runtime'] != runtime_dict[runtime]:
-            isValid = False
-        if language != 'all' and language not in language_list:
+        if runtime != 4 and runtime_dict[mynode['Runtime']] > runtime:
             isValid = False
         if score != 0 and float(mynode['IMDb Score']) < score:
             isValid = False
         return isValid
 
 
-def dijkstra(graph: 'nx.classes.graph.Graph', start: str, end: str, type_film: str, runtime: int, language: str, score: int, nodes):
+def dijkstra(graph: 'nx.classes.graph.Graph', start: str, end: str, type_film: str, runtime: int, score: int, nodes):
     """
     Algoritmo Dijkstra para encontrar el camino más corto entre dos nodos
 
@@ -90,7 +80,7 @@ def dijkstra(graph: 'nx.classes.graph.Graph', start: str, end: str, type_film: s
             for neighbor in dict(graph.adjacency()).get(curr):
                 # Buscar en el hashmap el nodo
                 mynode = nodes.get(str(neighbor))
-                if (filter_film(mynode, type_film, runtime, language, score)):
+                if (filter_film(mynode, type_film, runtime, score)):
                     path = dist[curr] + cost(curr, neighbor)
                     # Si encontramos un camino más corto
                     if path < dist[neighbor]:
