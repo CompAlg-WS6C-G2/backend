@@ -4,7 +4,7 @@ from queue import PriorityQueue
 import networkx as nx
 
 
-def filter_film(node, type_film: str, runtime: int, language: str, score: int):
+def filter_film(mynode: dict, type_film: str, runtime: int, language: str, score: int):
     runtime_dict = {
         0: '0',
         1: '< 30 minutes',
@@ -12,19 +12,22 @@ def filter_film(node, type_film: str, runtime: int, language: str, score: int):
         3: '> 2 hrs'
     }
 
-    language_list = node['Languages'].split(',')
+    language_list = mynode['Languages'].split(',')
+    language_list = list(map(str.strip, language_list))
+    if language_list == []:
+        language_list = ['English']
 
     if type_film == 'both' and runtime == 0 and language == 'all' and score == 0:
         return True
     else:
         isValid = True
-        if type_film != 'both' and node['Series or Movie'] != type_film:
+        if type_film != 'both' and mynode['Series or Movie'] != type_film:
             isValid = False
-        if runtime != 0 and node['Runtime'] != runtime_dict[runtime]:
+        if runtime != 0 and mynode['Runtime'] != runtime_dict[runtime]:
             isValid = False
         if language != 'all' and language not in language_list:
             isValid = False
-        if score != 0 and float(node['IMDb Score']) < score:
+        if score != 0 and float(mynode['IMDb Score']) < score:
             isValid = False
         return isValid
 

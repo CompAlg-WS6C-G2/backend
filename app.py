@@ -89,8 +89,8 @@ def graph_links():
     return jsonify(nx.node_link_data(netflix_graph).get('links'))
 
 
-# @ app.route('/dijkstra/<string:start>/<string:end>',
-#             defaults={'type_film': 'both', 'runtime': 0, 'language': 'all', 'score': 0})
+@ app.route('/dijkstra/<string:start>/<string:end>',
+            defaults={'type_film': 'both', 'runtime': 0, 'language': 'all', 'score': 0})
 @ app.route('/dijkstra/<string:start>/<string:end>/<string:type_film>/<int:runtime>/<string:language>/<int:score>')
 def dijkstra_route(start: str, end: str, type_film: str, runtime: int, language: str, score: int):
     """

@@ -20,13 +20,19 @@ def calculate_weight(source, target):
 
     if len(common_genres) > min_quantity_genres:
         source_country_availability = source['Country Availability'].split(',')
+        source_country_availability = list(
+            map(str.strip, source_country_availability))
         target_country_availability = target['Country Availability'].split(',')
+        target_country_availability = list(
+            map(str.strip, target_country_availability))
 
         common_countries = [
             _ for _ in source_country_availability if _ in target_country_availability]
 
         source_languages = source['Languages'].split(',')
+        source_languages = list(map(str.strip, source_languages))
         target_languages = target['Languages'].split(',')
+        source_languages = list(map(str.strip, source_languages))
 
         common_languages = [
             _ for _ in source_languages if _ in target_languages]
